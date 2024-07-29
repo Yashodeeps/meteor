@@ -25,11 +25,9 @@ const Timer = () => {
   //   };
 
   return (
-    <div>
-      <div>
-        <div className="text-4xl font-bold p-4"> 58.000 </div>
-        <p>Days until </p>
-      </div>
+    <div className="p-4 flex flex-col justify-center items-center">
+      <div className="text-5xl font-bold "> 58.000 </div>
+      <p>Days until </p>
     </div>
   );
 };

@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        retro: ['"VT323"', "cursive"],
+        retro: ['"VT323"', "monospace"],
       },
     },
   },
