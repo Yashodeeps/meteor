@@ -1,12 +1,13 @@
 import Timer from "./components/Timer";
 import Goals from "./components/Goals";
+import { ModeToggle } from "./components/mode-toggle";
 
 const BackgroundVideo = () => {
   return (
-    <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+    <div className="absolute top-0 left-0   w-full min-h-screen overflow-hidden z-0">
       <video
-        className="min-w-full min-h-full absolute object-cover"
-        src="../public/space.mp4"
+        className="min-w-full min-h-screen absolute object-cover"
+        src="../space.mp4"
         autoPlay
         loop
         muted
@@ -17,18 +18,22 @@ const BackgroundVideo = () => {
 
 const App = () => {
   return (
-    <div className="relative flex flex-col min-h-screen bg-zinc-900 font-retro ">
+    <div className="relative flex flex-col h-full  font-retro ">
       <BackgroundVideo />
-      <div className="relative z-10">
+      <div className="relative z-10 h-full ">
         {" "}
         <div>
           {" "}
           <img className="w-32 m-6 " src="/meteor.png" alt="logo" />
         </div>
-        <div className="text-white text-xl flex-col p-4 flex items-center justify-center">
+        <div className="text-white text-xl h-full flex items-center justify-center">
           {" "}
           <Timer />
-          <Goals />
+          <div className="absolute top-8 right-8 flex flex-col gap-5">
+            {" "}
+            <ModeToggle />
+            <Goals />
+          </div>
         </div>
       </div>
     </div>
