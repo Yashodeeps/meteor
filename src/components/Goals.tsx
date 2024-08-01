@@ -31,12 +31,15 @@ const Goals = () => {
     });
   }, []);
 
-  useEffect(() => {
+  const startTimer = () => {
     if (selectedDate) {
       chrome.storage.local.set({ targetDate: selectedDate });
       setTargetDate(selectedDate);
     }
-  }, [selectedDate, setSelectedDate]);
+    if (mission) {
+      addGoal(mission);
+    }
+  };
 
   const addGoal = (goal: any) => {
     const newGoals = [...goals, goal];
@@ -89,7 +92,6 @@ const Goals = () => {
             value={mission}
             onChange={(e) => {
               setMission(e.target.value);
-              addGoal(e.target.value);
             }}
           />
 
@@ -118,7 +120,9 @@ const Goals = () => {
               Close
             </Button>
           </DialogClose>
-          <Button variant={"secondary"}>Start</Button>
+          <Button variant={"secondary"} onClick={startTimer}>
+            Start
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

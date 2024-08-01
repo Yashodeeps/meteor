@@ -5,7 +5,7 @@
   "action": {
     "default_popup": "index.html",
     "default_icon": {
-      "32": "favicon32.png"
+      "32": "meteor-fav.png"
     }
   },
   "content_scripts": [

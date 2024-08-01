@@ -15,7 +15,7 @@ const Timer = () => {
       }
     });
     chrome.storage.local.get("goles", (data) => {
-      setMission(data.goals[0] || []);
+      setMission(data.goals || []);
     });
   }, []);
 
