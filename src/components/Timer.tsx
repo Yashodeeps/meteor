@@ -1,33 +1,28 @@
 // src/components/Timer.js
 // import { useState, useEffect } from "react";
 
+import { useTime } from "@/utils/TimeContext";
+import { useEffect, useState } from "react";
+
 const Timer = () => {
-  //   const [time, setTime] = useState(0);
-  //   const [isRunning, setIsRunning] = useState(false);
+  const [mission, setMission] = useState("");
+  const { remainingTime } = useTime() as any;
 
-  //   useEffect(() => {
-  //     let interval: any;
-  //     if (isRunning) {
-  //       interval = setInterval(() => {
-  //         setTime((prevTime) => prevTime + 1);
-  //       }, 1000);
-  //     } else if (!isRunning && time !== 0) {
-  //       clearInterval(interval);
-  //     }
-  //     return () => clearInterval(interval);
-  //   }, [isRunning, time]);
-
-  //   const handleStart = () => setIsRunning(true);
-  //   const handleStop = () => setIsRunning(false);
-  //   const handleReset = () => {
-  //     setIsRunning(false);
-  //     setTime(0);
-  //   };
+  useEffect(() => {
+    chrome.storage.local.get("remainingTime", (data) => {
+      if (data.remainingTime) {
+        // No need to update state, as the useEffect in TimeProvider handles it
+      }
+    });
+    chrome.storage.local.get("goles", (data) => {
+      setMission(data.goals[0] || []);
+    });
+  }, []);
 
   return (
     <div className="p-4 flex flex-col justify-center items-center">
-      <div className="text-5xl font-bold "> 58.000 </div>
-      <p>Days until </p>
+      <div className="text-5xl font-bold">{remainingTime}</div>
+      <p>Days until {mission ? mission : " ..."}</p>
     </div>
   );
 };
