@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "./ui/label";
@@ -22,6 +23,7 @@ const Goals = () => {
   const [daysDifference, setDaysDifference] = useState("");
   const [mission, setMission] = useState("");
   const { setTargetDate } = useTime() as any;
+  const [runningMissions, setRunningMissions] = useState<any>([]);
 
   const [goals, setGoals] = useState<any>([]);
 
@@ -74,6 +76,13 @@ const Goals = () => {
     setSelectedDate(date);
     calculateDaysDifference(date);
   };
+
+  useEffect(() => {
+    chrome.storage.local.get("goals", (data) => {
+      setRunningMissions([...runningMissions, data.goals]);
+    });
+  }, []);
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -83,9 +92,17 @@ const Goals = () => {
         </Button>{" "}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>missions</DialogTitle>
+        </DialogHeader>
+        <div className="p-4">
+          {runningMissions.map((mission: any, index: any) => (
+            <div key={index}>{mission}</div>
+          ))}
+        </div>
+
         <div className="flex flex-col gap-5">
-          <Label>MISSION</Label>
+          <Label>add new</Label>
           <Input
             type="text"
             placeholder="eg, launch Meteor extension"
