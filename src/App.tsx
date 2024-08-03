@@ -24,7 +24,7 @@ const App = () => {
         <div>
           <img className="w-32 m-6 " src="/meteor.png" alt="logo" />
         </div>
-        <div className="text-white text-xl h-full flex items-center justify-center">
+        <div className="dark:text-white text-xl h-full flex items-center justify-center ">
           <Timer />
           <div className="absolute top-8 right-8 flex flex-col gap-5">
             <ModeToggle />

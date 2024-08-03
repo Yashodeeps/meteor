@@ -44,7 +44,9 @@ const Goals = () => {
   };
 
   const addGoal = (goal: any) => {
-    const newGoals = [...goals, goal];
+    // const newGoals = [...goals, goal];
+    console.log(goals);
+    const newGoals = [goal];
     setGoals(newGoals);
     chrome.storage.local.set({ goals: newGoals });
   };
@@ -95,7 +97,7 @@ const Goals = () => {
         <DialogHeader>
           <DialogTitle>missions</DialogTitle>
         </DialogHeader>
-        <div className="p-4">
+        <div className="p-4 text-lg">
           {runningMissions.map((mission: any, index: any) => (
             <div key={index}>{mission}</div>
           ))}

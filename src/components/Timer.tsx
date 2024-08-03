@@ -18,9 +18,11 @@ const Timer = () => {
   });
 
   return (
-    <div className="p-4 flex flex-col justify-center items-center">
+    <div className="p-4 flex flex-col justify-center text-center items-center w-full">
       <div className="text-5xl font-bold">{remainingTime}</div>
-      <p className="p-2 text-sm">Days until {mission ? mission : " ..."}</p>
+      <p className="p-3 text-center  w-1/2">
+        Days until {mission ? mission : " ..."}
+      </p>
     </div>
   );
 };
