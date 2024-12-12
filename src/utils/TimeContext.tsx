@@ -9,7 +9,7 @@ export const TimeProvider = ({ children }: any) => {
   const [remainingTime, setRemainingTime] = useState("0.000000");
 
   useEffect(() => {
-    chrome.storage.local.get("targetDate", (data) => {
+    chrome?.storage?.local.get("targetDate", (data) => {
       setTargetDate(data.targetDate || "");
     });
 
@@ -31,7 +31,7 @@ export const TimeProvider = ({ children }: any) => {
           setRemainingTime("0.000000");
           clearInterval(interval);
         } else {
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24) + 1);
           const hours = Math.floor(
             (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
           );
@@ -51,7 +51,7 @@ export const TimeProvider = ({ children }: any) => {
   }, [targetDate, currentDate]);
 
   useEffect(() => {
-    chrome.storage.local.set({ remainingTime });
+    chrome?.storage?.local.set({ remainingTime });
   }, [remainingTime]);
 
   return (

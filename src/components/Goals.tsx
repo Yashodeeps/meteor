@@ -27,15 +27,9 @@ const Goals = () => {
 
   const [goals, setGoals] = useState<any>([]);
 
-  useEffect(() => {
-    chrome.storage.local.get("goals", (data) => {
-      setGoals(data.goals || []);
-    });
-  }, []);
-
   const startTimer = () => {
     if (selectedDate) {
-      chrome.storage.local.set({ targetDate: selectedDate });
+      chrome?.storage?.local.set({ targetDate: selectedDate });
       setTargetDate(selectedDate);
     }
     if (mission) {
@@ -43,12 +37,24 @@ const Goals = () => {
     }
   };
 
+  const stopTimer = () => {
+    chrome?.storage?.local.set({ targetDate: Date.now() });
+    setTargetDate(Date.now());
+    chrome?.storage?.local.set({ goals: [] });
+  };
+
+  useEffect(() => {
+    chrome?.storage?.local.get("goals", (data) => {
+      setGoals(data.goals || []);
+    });
+  }, [stopTimer, startTimer]);
+
   const addGoal = (goal: any) => {
     // const newGoals = [...goals, goal];
     console.log(goals);
     const newGoals = [goal];
     setGoals(newGoals);
-    chrome.storage.local.set({ goals: newGoals });
+    chrome?.storage?.local.set({ goals: newGoals });
   };
 
   const calculateDaysDifference = (date: any) => {
@@ -61,7 +67,7 @@ const Goals = () => {
     }
 
     const diffTime = targetDate - currentDate;
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const diffDays = diffTime / (1000 * 60 * 60 * 24) + 1;
     const diffHours = (diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
     const diffMinutes = (diffTime % (1000 * 60 * 60)) / (1000 * 60);
     const diffSeconds = (diffTime % (1000 * 60)) / 1000;
@@ -80,7 +86,7 @@ const Goals = () => {
   };
 
   useEffect(() => {
-    chrome.storage.local.get("goals", (data) => {
+    chrome?.storage?.local.get("goals", (data) => {
       setRunningMissions([...runningMissions, data.goals]);
     });
   }, []);
@@ -97,10 +103,13 @@ const Goals = () => {
         <DialogHeader>
           <DialogTitle>missions</DialogTitle>
         </DialogHeader>
-        <div className="p-4 text-lg">
-          {runningMissions.map((mission: any, index: any) => (
-            <div key={index}>{mission}</div>
-          ))}
+        <div className="p-4 text-lg ">
+          {runningMissions &&
+            runningMissions.map((mission: any, index: any) => (
+              <div key={index} className="flex justify-between">
+                <div> {mission}</div>
+              </div>
+            ))}{" "}
         </div>
 
         <div className="flex flex-col gap-5">
@@ -139,7 +148,10 @@ const Goals = () => {
               Close
             </Button>
           </DialogClose>
-          <Button variant={"secondary"} onClick={startTimer}>
+          <Button variant={"secondary"} onClick={stopTimer}>
+            Stop current
+          </Button>
+          <Button variant={"default"} onClick={startTimer}>
             Start
           </Button>
         </DialogFooter>
