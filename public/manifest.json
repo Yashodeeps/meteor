@@ -20,7 +20,16 @@
   "chrome_url_overrides": {
     "newtab": "../index.html"
   },
-  "permissions": ["storage", "activeTab", "scripting", "tabs", "identity"],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "identity",
+    "commands",
+    "history",
+    "chrome://favicon/"
+  ],
   "host_permissions": ["<all_urls>"],
   "icons": {
     "32": "meteor-fav.png"

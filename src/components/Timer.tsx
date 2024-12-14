@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import { useTime } from "@/utils/TimeContext";
-import { Button } from "./ui/button";
 import { Edit } from "lucide-react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import "@/index.css";
 
 const Timer = () => {
   const [mission, setMission] = useState("");
@@ -46,14 +48,15 @@ const Timer = () => {
   return ReactDOM.createPortal(
     <Draggable handle=".timer" position={position} onStop={handleStop}>
       <div
-        className={`p-4 flex flex-col justify-center text-center items-center w-full timer cursor-grab max-w-screen-xl max-h-screen ${
-          isEditing ? "border border-blue-500 rounded-lg bg-gray-900" : ""
+        className={` p-4 flex flex-col justify-center text-center items-center w-full timer cursor-grab max-w-screen-xl max-h-screen ${
+          isEditing ? "border border-blue-500 rounded-lg w-fit" : ""
         }`}
+        style={{ fontFamily: "Syne Mono" }}
       >
         {!isEditing ? (
           <>
             <div
-              className="text-5xl font-bold relative group"
+              className="text-7xl font-bold relative group"
               style={{ position: "relative" }}
             >
               {remainingTime}
@@ -65,56 +68,66 @@ const Timer = () => {
                 <Edit size={16} />
               </button>
             </div>
-            <p className="p-3 text-center w-1/2">
+            <p className="p-3 text-center text-xl font-bold w-1/2">
               Days until {mission ? mission : " ..."}
             </p>
           </>
         ) : (
           <form
-            className="flex flex-col items-center justify-center w-52 gap-4"
+            className="flex flex-col items-center justify-center w-full gap-4"
             onSubmit={(e) => {
               e.preventDefault();
               handleSave();
             }}
           >
             <div className="flex flex-col gap-2">
-              <label htmlFor="mission" className="text-sm">
-                Edit Mission
+              <label htmlFor="mission" className="font-bold text-lg">
+                Whats Your MISSION
               </label>
-              <input
+              <Input
                 id="mission"
                 type="text"
-                className="border rounded px-2 py-1 bg-gray-800 text-white"
+                className="border rounded px-2 py-1  bg-slate-400 bg-opacity-25 min-w-60 h-14 text-lg font-semibold"
+                placeholder="Launch an MVP"
                 value={newMission}
                 onChange={(e) => setNewMission(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="endDate" className="text-sm">
-                Select End Date
+              <label htmlFor="endDate" className="font-bold text-lg">
+                SET A DEADLINE
               </label>
-              <input
+              <Input
                 id="endDate"
                 type="date"
-                className="border rounded px-2 py-1 bg-gray-800 text-white"
+                className="border rounded px-2 py-1 bg-slate-400 bg-opacity-25 min-w-60 h-14 text-lg font-semibold"
                 value={newEndDate}
                 onChange={(e) => setNewEndDate(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
-              <button
+              <Button
+                type="button"
+                size={"icon"}
+                variant={"ghost"}
+                className="px-4 fixed top-0 right-0  py-2 rounded-full hover:bg-red-500 text-white"
+                onClick={() => setIsEditing(false)}
+              >
+                X
+              </Button>
+              <Button
                 type="submit"
-                className="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white"
+                className="px-4 py-2 rounded bg-purple-500 hover:bg-purple-600 text-white"
               >
                 Save
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 className="px-4 py-2 rounded bg-gray-500 hover:bg-gray-600 text-white"
                 onClick={() => setIsEditing(false)}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         )}

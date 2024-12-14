@@ -34,6 +34,7 @@ const App = () => {
           <div className="absolute top-8 right-8 flex flex-col gap-5">
             <ModeToggle />
             <Goals />
+            {/* <ChromeShortcuts /> */}
           </div>
         </div>
       </div>

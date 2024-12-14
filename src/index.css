@@ -67,3 +67,9 @@
     @apply bg-background text-foreground;
   }
 }
+@font-face {
+  font-family: "Syne Mono";
+  src: url("@/assets/fonts/SyneMono-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
