@@ -1,6 +1,6 @@
 import Timer from "./components/Timer";
-import Goals from "./components/Goals";
-import { ModeToggle } from "./components/mode-toggle";
+
+import Toolbar from "./components/Toolbar";
 
 const BackgroundMedia = () => {
   return (
@@ -25,16 +25,16 @@ const App = () => {
   return (
     <div className="relative flex flex-col h-full  font-retro ">
       <BackgroundMedia />
-      <div className="relative z-10 h-full ">
+      <div className="relative z-10 h-full bg-transparent ">
         <div>
           <img className="w-32 m-6 " src="/meteor.png" alt="logo" />
         </div>
         <div className="dark:text-white text-xl h-full flex items-center justify-center ">
           <Timer />
-          <div className="absolute top-8 right-8 flex flex-col gap-5">
-            <ModeToggle />
-            <Goals />
-            {/* <ChromeShortcuts /> */}
+          <div className="absolute top-20 left-8 flex flex-col gap-5">
+            {/* <Goals />
+            <Shortcuts /> */}
+            <Toolbar />
           </div>
         </div>
       </div>
