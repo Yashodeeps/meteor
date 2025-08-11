@@ -1,135 +1,290 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import { useTime } from "@/utils/TimeContext";
-import { Edit } from "lucide-react";
+import { Edit, Check, X, Trash2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import "@/index.css";
 
-const Timer = () => {
-  const [mission, setMission] = useState("");
-  const { remainingTime } = useTime() as any;
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+const Timer = ({
+  id,
+  mission,
+  endDate,
+  timerPosition,
+}: {
+  id: string;
+  mission: string;
+  endDate: string;
+  timerPosition?: { x: number; y: number };
+}) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [newMission, setNewMission] = useState(mission);
-  const [newEndDate, setNewEndDate] = useState("");
+  const [newMission, setNewMission] = useState(mission || "");
+  const [newEndDate, setNewEndDate] = useState(
+    endDate ? endDate.split("T")[0] : ""
+  );
+  const [position, setPosition] = useState(timerPosition || { x: 0, y: 0 });
 
+  const [bounds, setBounds] = useState({
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+  });
+  const timerRef = useRef<HTMLDivElement>(null);
+
+  const { remainingTime } = useTime() as {
+    remainingTime: Array<{ id: string; time: string }>;
+  };
+
+  const remainingTimeOfTimer =
+    remainingTime.find((time: any) => time.id === id)?.time || "0.000000";
+
+  // Calculate bounds based on screen size and timer dimensions
   useEffect(() => {
-    chrome?.storage?.local.get(["timerPosition", "goals"], (data) => {
-      if (data.timerPosition) {
-        setPosition(data.timerPosition);
+    const updateBounds = () => {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      const timerWidth = isEditing ? 350 : 300;
+      const timerHeight = isEditing ? 400 : 150;
+
+      setBounds({
+        left: 0,
+        top: 0,
+        right: screenWidth - timerWidth,
+        bottom: screenHeight - timerHeight,
+      });
+    };
+
+    updateBounds();
+    window.addEventListener("resize", updateBounds);
+    return () => window.removeEventListener("resize", updateBounds);
+  }, [isEditing]);
+
+  // Ensure initial position is within bounds
+  useEffect(() => {
+    if (bounds.right > 0 && bounds.bottom > 0 && !isEditing) {
+      const constrainedPosition = {
+        x: Math.max(bounds.left, Math.min(position.x, bounds.right)),
+        y: Math.max(bounds.top, Math.min(position.y, bounds.bottom)),
+      };
+
+      if (
+        constrainedPosition.x !== position.x ||
+        constrainedPosition.y !== position.y
+      ) {
+        setPosition(constrainedPosition);
+
+        chrome?.storage?.local.get("timers", (result) => {
+          const timers = result.timers || [];
+          const updatedTimers = timers.map((timer: any) =>
+            timer.id === id
+              ? { ...timer, timerPosition: constrainedPosition }
+              : timer
+          );
+          chrome?.storage?.local.set({ timers: updatedTimers });
+        });
       }
-      setMission(data.goals || "");
-    });
-  }, []);
+    }
+  }, [bounds, id, isEditing]);
 
   const handleStop = (e: DraggableEvent, data: DraggableData) => {
-    const newPosition = { x: data.x, y: data.y };
+    const constrainedPosition = {
+      x: Math.max(bounds.left, Math.min(data.x, bounds.right)),
+      y: Math.max(bounds.top, Math.min(data.y, bounds.bottom)),
+    };
+
     e.preventDefault();
-    setPosition(newPosition);
-    chrome?.storage?.local.set({ timerPosition: newPosition }, () => {
-      if (chrome.runtime.lastError) {
-        console.error("Error saving timer position", chrome.runtime.lastError);
-      }
+    setPosition(constrainedPosition);
+
+    chrome?.storage?.local.get("timers", (result) => {
+      const timers = result.timers || [];
+      const updatedTimers = timers.map((timer: any) =>
+        timer.id === id
+          ? { ...timer, timerPosition: constrainedPosition }
+          : timer
+      );
+      chrome?.storage?.local.set({ timers: updatedTimers }, () => {
+        console.log("Timer position updated:", constrainedPosition);
+      });
     });
   };
 
   const handleSave = () => {
-    setMission(newMission);
-    chrome?.storage?.local.set({ goals: newMission }, () => {
-      if (chrome.runtime.lastError) {
-        console.error("Error saving mission", chrome.runtime.lastError);
-      }
+    chrome?.storage?.local.get("timers", (result) => {
+      const timers = result.timers || [];
+      const updatedTimers = timers.map((timer: any) =>
+        timer.id === id
+          ? {
+              ...timer,
+              mission: newMission,
+              endDate: newEndDate
+                ? new Date(newEndDate).toISOString()
+                : timer.endDate,
+            }
+          : timer
+      );
+      chrome?.storage?.local.set({ timers: updatedTimers }, () => {
+        console.log("Timer updated:", {
+          mission: newMission,
+          endDate: newEndDate,
+        });
+        setIsEditing(false);
+      });
     });
+  };
+
+  const handleDelete = () => {
+    chrome?.storage?.local.get("timers", (result) => {
+      const timers = result.timers || [];
+      const updatedTimers = timers.filter((timer: any) => timer.id !== id);
+      chrome?.storage?.local.set({ timers: updatedTimers }, () => {
+        console.log("Timer deleted:", id);
+      });
+    });
+  };
+
+  const handleCancel = () => {
+    setNewMission(mission || "");
+    setNewEndDate(endDate ? endDate.split("T")[0] : "");
     setIsEditing(false);
   };
 
   return ReactDOM.createPortal(
-    <Draggable handle=".timer" position={position} onStop={handleStop}>
+    <Draggable
+      handle=".timer"
+      position={position}
+      onStop={handleStop}
+      bounds={bounds}
+      disabled={isEditing}
+    >
       <div
-        className={` p-4 flex flex-col justify-center text-center items-center w-full timer cursor-grab max-w-screen-xl max-h-screen ${
-          isEditing ? "border border-blue-500 rounded-lg w-fit" : ""
-        }`}
+        ref={timerRef}
+        className={`
+          timer select-none
+          ${
+            isEditing
+              ? "cursor-default bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl p-6 w-[350px]"
+              : "p-4 w-fit cursor-grab active:cursor-grabbing"
+          }
+        `}
         style={{ fontFamily: "Syne Mono" }}
       >
-        {!isEditing ? (
-          <>
+        {/* Timer Display - Always Visible */}
+        <div
+          className={`
+          flex flex-col items-center text-center
+          ${isEditing ? "mb-6" : ""}
+        `}
+        >
+          <div className="relative group">
             <div
-              className="text-7xl font-bold relative group"
-              style={{ position: "relative" }}
+              className={`
+              font-bold relative
+              ${isEditing ? "text-4xl" : "text-7xl"}
+               
+            `}
             >
-              {remainingTime}
+              {remainingTimeOfTimer}
 
-              <button
-                className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 bg-gray-700 rounded-full p-1  transition duration-300"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit size={16} />
-              </button>
+              {!isEditing && (
+                <button
+                  className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 
+                           bg-white/20 backdrop-blur-sm hover:bg-white/30 
+                           rounded-full p-2 transition-all duration-300
+                           border border-white/20 hover:border-white/40"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit size={16} className="text-white" />
+                </button>
+              )}
             </div>
-            <p className="p-3 text-center text-xl font-bold w-1/2">
-              Days until {mission ? mission : " ..."}
+
+            <p
+              className={`
+              font-bold text-center 
+              ${isEditing ? "text-sm mt-1 text-white/80" : "text-xl mt-3"}
+            `}
+            >
+              {mission || "ENTER YOUR GRAND MISSION"}
             </p>
-          </>
-        ) : (
-          <form
-            className="flex flex-col items-center justify-center w-full gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSave();
-            }}
-          >
-            <div className="flex flex-col gap-2">
-              <label htmlFor="mission" className="font-bold text-lg">
-                Whats Your MISSION
-              </label>
-              <Input
-                id="mission"
-                type="text"
-                className="border rounded px-2 py-1  bg-slate-400 bg-opacity-25 min-w-60 h-14 text-lg font-semibold"
-                placeholder="Launch an MVP"
-                value={newMission}
-                onChange={(e) => setNewMission(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="endDate" className="font-bold text-lg">
-                SET A DEADLINE
-              </label>
-              <Input
-                id="endDate"
-                type="date"
-                className="border rounded px-2 py-1 bg-slate-400 bg-opacity-25 min-w-60 h-14 text-lg font-semibold"
-                value={newEndDate}
-                onChange={(e) => setNewEndDate(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                size={"icon"}
-                variant={"ghost"}
-                className="px-4 fixed top-0 right-0  py-2 rounded-full hover:bg-red-500 text-white"
-                onClick={() => setIsEditing(false)}
-              >
-                X
-              </Button>
-              <Button
-                type="submit"
-                className="px-4 py-2 rounded bg-purple-500 hover:bg-purple-600 text-white"
-              >
-                Save
-              </Button>
-              <Button
-                type="button"
-                className="px-4 py-2 rounded bg-gray-500 hover:bg-gray-600 text-white"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
+          </div>
+        </div>
+
+        {/* Edit Form - Only in Editing Mode */}
+        {isEditing && (
+          <div className="animate-fadeIn">
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSave();
+              }}
+            >
+              <div className="space-y-2">
+                <label className="text-lg font-medium text-white/90 uppercase tracking-wide">
+                  Mission
+                </label>
+                <Input
+                  type="text"
+                  className="bg-white/10 border-white/20 text-white placeholder-white/50
+                           focus:border-white/40 focus:bg-white/15 rounded-xl h-12
+                           transition-all duration-200 text-lg"
+                  placeholder="Launch MVP"
+                  value={newMission}
+                  onChange={(e) => setNewMission(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-lg font-medium text-white/90 uppercase tracking-wide">
+                  Deadline
+                </label>
+                <Input
+                  type="date"
+                  className="bg-white/10 border-white/20 text-white
+                           focus:border-white/40 focus:bg-white/15 rounded-xl h-12
+                           transition-all duration-200 text-lg"
+                  value={newEndDate}
+                  onChange={(e) => setNewEndDate(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                <Button
+                  type="submit"
+                  className="flex-1 bg-green-600 hover:bg-green-700 border-0 rounded-lg
+                           transition-all duration-200 font-medium"
+                >
+                  <Check size={16} className="mr-1" />
+                  Save
+                </Button>
+
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20
+                           rounded-lg transition-all duration-200"
+                  onClick={handleCancel}
+                >
+                  <X size={16} />
+                </Button>
+
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="destructive"
+                  className="bg-red-600/80 hover:bg-red-600 border-0 rounded-lg
+                           transition-all duration-200"
+                  onClick={handleDelete}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
     </Draggable>,

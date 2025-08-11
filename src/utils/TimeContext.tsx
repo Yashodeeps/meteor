@@ -1,61 +1,78 @@
-// src/utils/TimeContext.js
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 
 const TimeContext = createContext({});
 
+interface RemainingTimeType {
+  id: string;
+  time: string;
+}
+
 export const TimeProvider = ({ children }: any) => {
-  const [targetDate, setTargetDate] = useState("");
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [remainingTime, setRemainingTime] = useState("0.000000");
+  const [timers, setTimers] = useState([]);
+  const [remainingTime, setRemainingTime] = useState<RemainingTimeType[]>([]);
 
   useEffect(() => {
-    chrome?.storage?.local.get("targetDate", (data) => {
-      setTargetDate(data.targetDate || "");
+    // Load timers from storage
+    chrome?.storage?.local.get("timers", (data) => {
+      setTimers(data.timers || []);
     });
 
-    const interval = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 1);
+    // Listen for storage changes
+    const handleStorageChange = (changes: any, area: string) => {
+      if (area === "local" && changes.timers) {
+        setTimers(changes.timers.newValue || []);
+      }
+    };
 
-    return () => clearInterval(interval);
+    chrome?.storage?.onChanged.addListener(handleStorageChange);
+
+    return () => {
+      chrome?.storage?.onChanged.removeListener(handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
-    if (targetDate) {
-      const interval = setInterval(() => {
-        const now: any = new Date();
-        const target: any = new Date(targetDate);
-        const diff = target - now;
+    if (timers.length === 0) return;
+
+    // Single interval to update all timers
+    const interval = setInterval(() => {
+      const now = new Date();
+      const updatedTimes: RemainingTimeType[] = [];
+
+      timers.forEach((timer: any) => {
+        const target = new Date(timer.endDate);
+        const diff = target.getTime() - now.getTime();
 
         if (diff <= 0) {
-          setRemainingTime("0.000000");
-          clearInterval(interval);
+          updatedTimes.push({
+            id: timer.id,
+            time: "0.000000",
+          });
         } else {
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24) + 1);
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
           const hours = Math.floor(
             (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
           );
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-          setRemainingTime(
-            `${days}.${hours.toString().padStart(2, "0")}${minutes
+          updatedTimes.push({
+            id: timer.id,
+            time: `${days}.${hours.toString().padStart(2, "0")}${minutes
               .toString()
-              .padStart(2, "0")}${seconds.toString().padStart(2, "0")}`
-          );
+              .padStart(2, "0")}${seconds.toString().padStart(2, "0")}`,
+          });
         }
-      }, 1);
+      });
 
-      return () => clearInterval(interval);
-    }
-  }, [targetDate, currentDate]);
+      setRemainingTime(updatedTimes);
+    }, 1000); // Update every second instead of every millisecond
 
-  useEffect(() => {
-    chrome?.storage?.local.set({ remainingTime });
-  }, [remainingTime]);
+    return () => clearInterval(interval);
+  }, [timers]);
 
   return (
-    <TimeContext.Provider value={{ targetDate, setTargetDate, remainingTime }}>
+    <TimeContext.Provider value={{ remainingTime }}>
       {children}
     </TimeContext.Provider>
   );

@@ -1,4 +1,4 @@
-import Timer from "./components/Timer";
+import TimerManager from "./components/TimerManager";
 
 import Toolbar from "./components/Toolbar";
 
@@ -27,10 +27,14 @@ const App = () => {
       <BackgroundMedia />
       <div className="relative z-10 h-full bg-transparent ">
         <div>
-          <img className="w-32 m-6 " src="/meteor.png" alt="logo" />
+          <img
+            className=" absolute top-3 left-3 w-32  "
+            src="/meteor.png"
+            alt="logo"
+          />
         </div>
         <div className="dark:text-white text-xl h-full flex items-center justify-center ">
-          <Timer />
+          <TimerManager />
           <div className="absolute top-20 left-8 flex flex-col gap-5">
             {/* <Goals />
             <Shortcuts /> */}

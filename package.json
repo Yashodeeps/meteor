@@ -21,6 +21,7 @@
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.1.8",
     "lucide-react": "^0.417.0",
+    "nanoid": "^5.1.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-draggable": "^4.4.6",
