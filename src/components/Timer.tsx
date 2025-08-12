@@ -165,16 +165,28 @@ const Timer = ({
           timer select-none
           ${
             isEditing
-              ? "cursor-default bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl p-6 w-[350px]"
-              : "p-4 w-fit cursor-grab active:cursor-grabbing"
+              ? "relative cursor-default bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl p-6 w-[350px]"
+              : "p-4 w-fit cursor-grab active:cursor-grabbing relative"
           }
         `}
         style={{ fontFamily: "Syne Mono" }}
       >
+        {isEditing && (
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="absolute top-1 right-1 bg-white/10 border-white/20 text-white hover:bg-white/20
+                            rounded-lg transition-all duration-200"
+            onClick={handleCancel}
+          >
+            <X size={16} />
+          </Button>
+        )}
         {/* Timer Display - Always Visible */}
         <div
           className={`
-          flex flex-col items-center text-center
+          flex flex-col items-center text-center relative
           ${isEditing ? "mb-6" : ""}
         `}
         >
@@ -214,7 +226,7 @@ const Timer = ({
 
         {/* Edit Form - Only in Editing Mode */}
         {isEditing && (
-          <div className="animate-fadeIn">
+          <div className="animate-fadeIn relative">
             <form
               className="flex flex-col gap-4"
               onSubmit={(e) => {
@@ -254,22 +266,11 @@ const Timer = ({
               <div className="flex gap-2 mt-4">
                 <Button
                   type="submit"
-                  className="flex-1 bg-green-600 hover:bg-green-700 border-0 rounded-lg
+                  className="flex-1 bg-sky-600 hover:bg-sky-700 text-white  shadow-lg border-0 rounded-lg
                            transition-all duration-200 font-medium"
                 >
                   <Check size={16} className="mr-1" />
                   Save
-                </Button>
-
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20
-                           rounded-lg transition-all duration-200"
-                  onClick={handleCancel}
-                >
-                  <X size={16} />
                 </Button>
 
                 <Button
